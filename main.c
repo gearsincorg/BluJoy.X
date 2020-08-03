@@ -6,24 +6,26 @@
 
 */
 
+#include <string.h>
 #include "mcc_generated_files/mcc.h"
 #include "timers.h"
 #include "joystick.h"
 #include "serial.h"
 #include "configure.h"
+#include "ui.h"
 
 /*
                          Main application
  */
 void main(void)
 {
-    volatile uint8_t rxData;
-
     // Initialize the device
     SYSTEM_Initialize();
     initTimers();   
     initJoystick();   
     initSerial();   
+    initUI();   
+    
     turnPowerOn();
     
     // Enable the Global Interrupts
@@ -31,10 +33,23 @@ void main(void)
 
     // Enable the Peripheral Interrupts
     INTERRUPT_PeripheralInterruptEnable();
+    
+    showStartup();
 
+    // check to see if we should initialize the master and slave devices
+    if (USER1_pressed() && USER1_pressed()){
+        // Configure Master and Slave devices
+        pairBluetoothDevices();
+        
+        // Also init any NV memory
+        setUISpeedMode(0);
+        setUIBreakMode(0);
+    }
+        
     while(1)
     {
-        sleep(500);
+        runUI();
+        sleep(50);
     }
     
     // Disable the Global Interrupts

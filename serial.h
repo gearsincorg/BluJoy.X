@@ -14,11 +14,11 @@
 
 // TODO Insert declarations
 void     initSerial(void);
-bool     sendSpeedCmd(int16_t  axial, int16_t yaw, bool blockIfBusy) ;
-bool     sendBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy);
-void     flushRXbuffer(void);
-uint8_t  receiveBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS);
-
+bool     sendBTSpeedCmd(int16_t  axial, int16_t yaw, bool blockIfBusy) ;
+void     sendBTString(char * command);
+bool     sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy);
+void     flushBTRXbuffer(void);
+uint8_t  receiveBTBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS);
 
 uint16_t calcCRC(uint8_t *ptr);
 void	 int16ToBytes(int16_t num, uint8_t * ndata);

@@ -20,22 +20,20 @@ void    initSerial(void) {
     speedBuffer[11] = '\n';  // EOM
 }
 
-bool    sendSpeedCmd(int16_t  axial, int16_t yaw,  bool blockIfBusy) {
+bool    sendBTSpeedCmd(int16_t  axial, int16_t yaw,  bool blockIfBusy) {
     int16ToBytes(axial, speedBuffer + 5);
     int16ToBytes(yaw,   speedBuffer + 7);
     calcCRC(speedBuffer);
-    return sendBuffer(speedBuffer, sizeof(speedBuffer), blockIfBusy);
+    return sendBTBuffer((uint8_t *)(int8_t *)speedBuffer, sizeof(speedBuffer), blockIfBusy);
 }
 
-void    sendString(char * buffer) {
-    sendBuffer(buffer, strlen(buffer), true);
+void    sendBTString(char * buffer) {
+    sendBTBuffer(buffer, strlen(buffer), true);
 }
 
-
-bool    sendBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
+bool    sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
     if (blockIfBusy || (eusart1TxBufferRemaining > length)){
         while (length > 0) {
-
             // wait till tx buffer ready
             while(!EUSART1_is_tx_ready());
 
@@ -50,7 +48,7 @@ bool    sendBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
     }
 }
 
-void    flushRXbuffer(void) {
+void    flushBTRXbuffer(void) {
     while (EUSART1_is_rx_ready()) ;
 }
 
@@ -61,7 +59,7 @@ void    flushRXbuffer(void) {
  * @param  timeoutMS Length of time to wait for chars
  * @return Number of characters read.
  */
-uint8_t receiveBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS) {
+uint8_t receiveBTBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS) {
     uint32_t startTime = getTicks();
     uint8_t charsRead = 0;
     

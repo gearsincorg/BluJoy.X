@@ -5,14 +5,19 @@
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
+#define MAC_LENGTH  12
+
+void    pairBluetoothDevices(void);
 void    SetMasterTXRX(void);
 void    SetSlaveTXRX(void);
 void    SetSlaveTXMasterRx(void);
+void    setBlutoothBaud(uint16_t baud);
+
+bool    getBTAddress(uint8_t * MAC);
+void    setBTConnection(uint8_t * MAC, bool isMaster);
 
 void    turnPowerOn();
 void    turnPowerOff();
-
-void    setBlutoothBaud(uint16_t baud);
 
 #ifdef	__cplusplus
 extern "C" {

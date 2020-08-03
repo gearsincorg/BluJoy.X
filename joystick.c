@@ -81,7 +81,7 @@ void    readJoystick(void) {
     
     // calculate motion profile and send to serial port.
     calculateMotion();
-    sendSpeedCmd(limitedAxialFP >> SHIFT_BITS, limitedYawFP >> SHIFT_BITS, false);
+    sendBTSpeedCmd(limitedAxialFP >> SHIFT_BITS, limitedYawFP >> SHIFT_BITS, false);
 }
     
 void    calculateMotion(void) {

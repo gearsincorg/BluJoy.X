@@ -3,7 +3,7 @@
  */
 #include "timers.h"
 
-uint32_t    systemTime;
+volatile    uint32_t    systemTime;
 
 void        initTimers(void){
     systemTime = 0;
