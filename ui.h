@@ -5,14 +5,14 @@
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 
-#define COLOR_RED     0xF00
-#define COLOR_GREEN   0x0F0
-#define COLOR_BLUE    0x00F
-#define COLOR_YELLOW  0xFF0
-#define COLOR_AMBER   0xF70
-#define COLOR_MAGENTA 0xF0F
-#define COLOR_CYAN    0x0FF
-#define COLOR_WHITE   0xFFF
+#define COLOR_RED     0x300
+#define COLOR_GREEN   0x030
+#define COLOR_BLUE    0x003
+#define COLOR_YELLOW  0x330
+#define COLOR_AMBER   0x310
+#define COLOR_MAGENTA 0x303
+#define COLOR_CYAN    0x033
+#define COLOR_WHITE   0x333
 #define COLOR_OFF     0x000
 
 // TODO Insert appropriate #include <>

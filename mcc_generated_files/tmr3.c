@@ -92,8 +92,8 @@ void TMR3_Initialize(void)
     // Set Default Interrupt Handler
     TMR3_SetInterruptHandler(TMR3_DefaultInterruptHandler);
 
-    // CKPS 1:1; NOT_SYNC synchronize; TMR3ON enabled; T3RD16 disabled; 
-    T3CON = 0x01;
+    // CKPS 1:1; NOT_SYNC do_not_synchronize; TMR3ON enabled; T3RD16 disabled; 
+    T3CON = 0x05;
 }
 
 void TMR3_StartTimer(void)
@@ -168,12 +168,19 @@ void TMR3_ISR(void)
     PIR4bits.TMR3IF = 0;
     TMR3_WriteTimer(timer3ReloadVal);
 
+    // ticker function call;
+    // ticker is 1 -> Callback function gets called everytime this ISR executes
+    TMR3_CallBack();
+}
+
+void TMR3_CallBack(void)
+{
+    // Add your custom callback code here
     if(TMR3_InterruptHandler)
     {
         TMR3_InterruptHandler();
     }
 }
-
 
 void TMR3_SetInterruptHandler(void (* InterruptHandler)(void)){
     TMR3_InterruptHandler = InterruptHandler;

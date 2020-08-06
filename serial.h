@@ -16,8 +16,9 @@
 void     initSerial(void);
 bool     sendBTSpeedCmd(int16_t  axial, int16_t yaw, bool blockIfBusy) ;
 void     sendBTString(char * command);
-bool     sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy);
 void     flushBTRXbuffer(void);
+
+bool     sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy);
 uint8_t  receiveBTBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS);
 
 uint16_t calcCRC(uint8_t *ptr);

@@ -15,8 +15,11 @@
 void        initTimers(void);
 void        timeKeeper(void);
 void        sleep(uint32_t delay);
+uint32_t    timeSincelLastReply(void);
+void        resetBTTimer(void);
 uint32_t    getTicks(void);
 int32_t     getTicksSince(uint32_t from);
+
 
 
 #ifdef	__cplusplus

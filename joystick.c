@@ -11,6 +11,9 @@
 #include <math.h>
 #include "joystick.h"
 #include "serial.h"
+#include "timers.h"
+
+#define     MAX_REPLY       2
 
 #define     SHIFT_BITS      2
 #define     AXIAL_ACC_LIMIT 600      //  mm/s/s
@@ -22,6 +25,7 @@
 #define     TOP_YAW_SPEED   90
 #define     TOP_SWEEP_SPEED 60
 
+uint8_t     replyBuffer[4 * MAX_REPLY];
 int16_t     targetAxialFP = 0;
 int16_t     targetYawFP   = 0;
 
@@ -41,7 +45,7 @@ int16_t     topSweepSpeedFP   = (TOP_SWEEP_SPEED << SHIFT_BITS) ;
 
 
 void    initJoystick(void) {
-    TMR1_SetInterruptHandler(readJoystick);
+    // TMR1_SetInterruptHandler(readJoystick);
     targetAxialFP = 0;
     targetYawFP   = 0;
     limitedAxialFP = 0;
@@ -82,6 +86,11 @@ void    readJoystick(void) {
     // calculate motion profile and send to serial port.
     calculateMotion();
     sendBTSpeedCmd(limitedAxialFP >> SHIFT_BITS, limitedYawFP >> SHIFT_BITS, false);
+    
+    // look for reply from last command
+    if (receiveBTBuffer(replyBuffer, sizeof(replyBuffer), 1) > 0) {
+        resetBTTimer();
+    }
 }
     
 void    calculateMotion(void) {

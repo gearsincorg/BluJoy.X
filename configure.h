@@ -12,12 +12,13 @@ void    SetMasterTXRX(void);
 void    SetSlaveTXRX(void);
 void    SetSlaveTXMasterRx(void);
 void    setBlutoothBaud(uint16_t baud);
+bool    powerIsOn(void);
 
 bool    getBTAddress(uint8_t * MAC);
 void    setBTConnection(uint8_t * MAC, bool isMaster);
 
-void    turnPowerOn();
-void    turnPowerOff();
+void    turnPowerOn(void);
+void    turnPowerOff(void);
 
 #ifdef	__cplusplus
 extern "C" {

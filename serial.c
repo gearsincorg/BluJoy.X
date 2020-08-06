@@ -28,6 +28,7 @@ bool    sendBTSpeedCmd(int16_t  axial, int16_t yaw,  bool blockIfBusy) {
 }
 
 void    sendBTString(char * buffer) {
+    flushBTRXbuffer();
     sendBTBuffer(buffer, strlen(buffer), true);
 }
 
@@ -49,7 +50,8 @@ bool    sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
 }
 
 void    flushBTRXbuffer(void) {
-    while (EUSART1_is_rx_ready()) ;
+    while (EUSART1_is_rx_ready())
+        EUSART1_Read();
 }
 
 /**
@@ -64,7 +66,7 @@ uint8_t receiveBTBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS) 
     uint8_t charsRead = 0;
     
     // return when chars read, or timeout.
-    while ((charsRead <= maxChars) && (getTicksSince(startTime <= timeoutMS))) {
+    while ((charsRead < maxChars) && (getTicksSince(startTime) <= timeoutMS)) {
         if (EUSART1_is_rx_ready()) {
             (*buffer++ = EUSART1_Read());
             charsRead++;

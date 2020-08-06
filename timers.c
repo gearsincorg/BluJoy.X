@@ -3,10 +3,12 @@
  */
 #include "timers.h"
 
-volatile    uint32_t    systemTime;
+uint32_t    systemTime;
+uint32_t    lastBTTime;
 
 void        initTimers(void){
     systemTime = 0;
+    lastBTTime = 0;
     TMR2_SetInterruptHandler(timeKeeper);
 }
 
@@ -27,3 +29,10 @@ int32_t    getTicksSince(uint32_t from){
     return (systemTime - from);
 }
 
+void       resetBTTimer(void){
+    lastBTTime = systemTime;
+}
+
+uint32_t   timeSincelLastReply(void){
+    return (systemTime - lastBTTime);
+}
