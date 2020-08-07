@@ -22,6 +22,7 @@ void    setBTBaudRatesTo38400(void);
 bool    getBTAddress(uint8_t * MAC, bool isMaster);
 void    setBTConnection(uint8_t * MAC, bool isMaster);
 
+void    doFactoryReset(void);
 void    turnPowerOn(void);
 void    turnPowerOff(void);
 

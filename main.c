@@ -44,11 +44,16 @@ void main(void)
         sleep(50);
         
         // check to see if we should initialize the master and slave devices
-        if (USER1_pressed() && USER2_pressed()){
+        if (USER1_pressed()){
             // Configure Master and Slave devices
             pairBluetoothDevices();
         }
                 
+        if (USER2_pressed()){
+            // Do a factory reset
+            doFactoryReset();
+        }
+        
         sendBTString("HUGS\n");
         if (receiveBTBuffer(MainBuffer, 5, 1000) >= 5){
             if (strstr((char *)MainBuffer, "HUGS\n"))
