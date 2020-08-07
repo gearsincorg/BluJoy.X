@@ -16,6 +16,8 @@
 
 #define BT_TIMEOUT  60000
 
+uint8_t MainBuffer[32];
+
 /*
                          Main application
  */
@@ -26,24 +28,35 @@ void main(void)
     initTimers();   
     initSerial();   
     initUI();   
-    
+ 
     turnPowerOn();
-    
+
     // Enable the Global Interrupts
     INTERRUPT_GlobalInterruptEnable();
 
     // Enable the Peripheral Interrupts
     INTERRUPT_PeripheralInterruptEnable();
-    
-    showStartup();
-    sleep(1000);
-    pairBluetoothDevices();
 
+    initConfiguration();
+    sleep(1000);
+           
     while (1) {
+        sleep(50);
+        
         // check to see if we should initialize the master and slave devices
-        if (USER1_pressed() && USER1_pressed()){
+        if (USER1_pressed() && USER2_pressed()){
             // Configure Master and Slave devices
             pairBluetoothDevices();
+        }
+                
+        sendBTString("HUGS\n");
+        if (receiveBTBuffer(MainBuffer, 5, 1000) >= 5){
+            if (strstr((char *)MainBuffer, "HUGS\n"))
+                pulseLEDColor( COLOR_MAGENTA, 5, 10);
+            else
+                pulseLEDColor( COLOR_RED, 5, 10);
+        } else {
+            pulseLEDColor( COLOR_YELLOW, 5, 10);
         }
     }
     

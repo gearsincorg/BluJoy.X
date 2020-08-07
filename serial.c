@@ -10,7 +10,7 @@ extern volatile uint8_t eusart1TxBufferRemaining;
 uint8_t speedBuffer[SPEED_CMD_LENGTH] ;
 
 void    initSerial(void) {
-
+ 
     memset(speedBuffer, 0, sizeof(speedBuffer));
     speedBuffer[0]  = '/';
     speedBuffer[1]  = 4;     // 4 bytes of data (two short ints)
@@ -24,12 +24,12 @@ bool    sendBTSpeedCmd(int16_t  axial, int16_t yaw,  bool blockIfBusy) {
     int16ToBytes(axial, speedBuffer + 5);
     int16ToBytes(yaw,   speedBuffer + 7);
     calcCRC(speedBuffer);
-    return sendBTBuffer((uint8_t *)(int8_t *)speedBuffer, sizeof(speedBuffer), blockIfBusy);
+    return sendBTBuffer((void *)speedBuffer, sizeof(speedBuffer), blockIfBusy);
 }
 
 void    sendBTString(char * buffer) {
     flushBTRXbuffer();
-    sendBTBuffer(buffer, strlen(buffer), true);
+    sendBTBuffer((void *)buffer, strlen(buffer), true);
 }
 
 bool    sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
@@ -50,8 +50,11 @@ bool    sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
 }
 
 void    flushBTRXbuffer(void) {
-    while (EUSART1_is_rx_ready())
+    while (EUSART1_is_rx_ready()){
         EUSART1_Read();
+        if (!EUSART1_is_rx_ready())
+            sleep(5);  // Just in case they are still coming
+    }
 }
 
 /**

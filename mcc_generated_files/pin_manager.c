@@ -58,8 +58,8 @@ void PIN_MANAGER_Initialize(void)
     LATx registers
     */
     LATA = 0x20;
-    LATB = 0x00;
-    LATC = 0x00;
+    LATB = 0x70;
+    LATC = 0x50;
 
     /**
     TRISx registers
@@ -110,8 +110,8 @@ void PIN_MANAGER_Initialize(void)
    
     
 	
-    RC6PPS = 0x0F;   //RC6->EUSART1:TX1;    
-    RX1DTPPS = 0x13;   //RC3->EUSART1:RX1;    
+    RC4PPS = 0x0F;   //RC4->EUSART1:TX1;    
+    RX1DTPPS = 0x15;   //RC5->EUSART1:RX1;    
 }
   
 void PIN_MANAGER_IOC(void)

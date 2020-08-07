@@ -7,14 +7,19 @@
 
 #define MAC_LENGTH  12
 
+void    initConfiguration(void);
+
 void    pairBluetoothDevices(void);
 void    SetMasterTXRX(void);
 void    SetSlaveTXRX(void);
-void    SetSlaveTXMasterRx(void);
-void    setBlutoothBaud(uint16_t baud);
+void    SetSlaveTXMasterRX(void);
+void    SetDualReceive(void);
+
+void    setSerialBaud(uint16_t baud);
 bool    powerIsOn(void);
 
-bool    getBTAddress(uint8_t * MAC);
+void    setBTBaudRatesTo38400(void);
+bool    getBTAddress(uint8_t * MAC, bool isMaster);
 void    setBTConnection(uint8_t * MAC, bool isMaster);
 
 void    turnPowerOn(void);

@@ -5,52 +5,47 @@
 #include "timers.h"
 #include "ui.h"
 
+uint8_t slaveMAC[MAC_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0};
+uint8_t masterMAC[MAC_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0};
+
 uint8_t RX_Buffer[32];
 uint8_t charsRead;
-uint8_t slaveMAC[MAC_LENGTH]  = {0,0,0,0,0,0,0,0,0,0,0,0};
-uint8_t masterMAC[MAC_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0};
 bool    powerOn = false;
 
+void    initConfiguration() {
+    
+    setSerialBaud(38400);
+    SetSlaveTXRX();
+    showStartup();
+}
+
 void    SetSlaveTXRX(void){
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x00;
+    RX1DTPPS = 0x15;   //        RC5->EUSART1:RX1;    
+    RC4PPS = 0x0F;     //EUSART1:TX1->RC4 ;    
+    RC6PPS = 0x16;     //        RC6->RC6;    
+    sleep(5);
+}
 
-    RC4PPS = 0x0F;     //RC4->EUSART1:TX1;    
-    RX1DTPPS = 0x15;   //RC5->EUSART1:RX1;    
-
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x01;
-    sleep(100);
+void    SetDualReceive(void){
+    RX1DTPPS = 0x15;   //        RC5->EUSART1:RX1;    
+    RC4PPS   = 0x0F;   //EUSART1:TX1->RC4 ;    
+    RC5PPS   = 0x0F;   //EUSART1:TX1->RC6 ;    
+    sleep(5);
 }
 
 void    SetMasterTXRX(void){
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x00;
-
-    RC6PPS = 0x0F;     //RC6->EUSART1:TX1;    
-    RX1DTPPS = 0x13;   //RC3->EUSART1:RX1;    
-
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x01;
-    sleep(100);
+    RX1DTPPS = 0x13;   //        RC3->EUSART1:RX1;    
+    RC6PPS = 0x0F;     //EUSART1:TX1->RC6;    
+    RC4PPS = 0x14;     //        RC4->RC4;    
+    sleep(5);
 }
 
-void    SetSlaveTXMasterRx(void){
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x00;
-
-    RC4PPS = 0x0F;     //RC4->EUSART1:TX1;    
+void    SetSlaveTXMasterRX(void){
     RX1DTPPS = 0x13;   //RC3->EUSART1:RX1;    
-
-    PPSLOCK = 0x55;
-    PPSLOCK = 0xAA;
-    PPSLOCK = 0x01;
-    sleep(20);
+    
+    RC4PPS = 0x0F;     //EUSART1:TX1->RC4 ;    
+    RC6PPS = 0x16;     //        RC6->RC6;    
+    sleep(5);
 }
 
 void    turnPowerOn(){
@@ -67,7 +62,7 @@ bool    powerIsOn() {
     return powerOn;
 }
 
-void    setBlutoothBaud(uint16_t baud){
+void    setSerialBaud(uint16_t baud){
     if (baud == 38400) {
         // 38400
         SP1BRGL = 0x33;
@@ -80,104 +75,86 @@ void    setBlutoothBaud(uint16_t baud){
     sleep(200);
 }
 
+
 void    pairBluetoothDevices(void){
-
-    SetMasterTXRX();
-    sleep(1000);
-    getBTAddress(masterMAC);   
-       
+    setBTBaudRatesTo38400();
+    
     // Get two Mac Addresses
+    getBTAddress(slaveMAC, false);
+    getBTAddress(masterMAC, true);
+       
+    // now setup the default connections
+    setBTConnection(slaveMAC, true);    
+    setBTConnection(masterMAC, false);    
+    
+    // Return ports to normal configuration
     SetSlaveTXRX();
     sleep(1000);
-    getBTAddress(slaveMAC);    
-
-    SetMasterTXRX();
-    
-
- 
-    
-    return;
-        
-    // now setup the default connection  Master First
-    pulseLEDColor( COLOR_WHITE, 100, 400);
-    setBTConnection(slaveMAC, true);    
-    
-   
-    // now setup the default connection  Slave Second
-    pulseLEDColor( COLOR_WHITE, 100, 4000);
-    SetSlaveTXRX();
-    setBTConnection(masterMAC, false);    
-
-    // test end/end communications.
-    pulseLEDColor( COLOR_WHITE, 100, 1000);
-    SetSlaveTXMasterRx();
-        
-    while(1) {
-        sendBTString("HUGS\n");
-        if (receiveBTBuffer(RX_Buffer, 8, 100) == 5){
-            pulseLEDColor( COLOR_MAGENTA, 250, 100);
-            if (strstr((char *)RX_Buffer, "HUGS\n"))
-                pulseLEDColor( COLOR_GREEN, 250, 100);
-            else
-                pulseLEDColor( COLOR_RED, 250, 100);
-        } else {
-            pulseLEDColor( COLOR_RED, 750, 250);
-        }
-    }
 }
 
-bool    getBTAddress(uint8_t * MAC) {
+void    setBTBaudRatesTo38400() {
+    // switch to 9600 baud and tell modules to run at 38400
+    // This will be ignored if they are already there.
+    SetDualReceive();
+    setSerialBaud(9600);
 
-    // Force the baud rate back to 9600 (just in case it is 38400)
-    pulseLEDColor( COLOR_CYAN, 100, 400);
-    setBlutoothBaud(38400);
     sendBTString("AT");
     sleep(100);
-    sendBTString("AT+BAUD0");
-    sleep(500);
+    sendBTString("AT");
+    sleep(100);
+    sendBTString("AT+BAUD2");
+    sleep(100);
     sendBTString("AT+RESET");  // expect OK+RESET
     sleep(500);
-    setBlutoothBaud(9600);
-    
-    pulseLEDColor( COLOR_MAGENTA, 100, 200);
+    setSerialBaud(38400);
+}
+
+bool    getBTAddress(uint8_t * MAC, bool isMaster) {
+
+    if (isMaster) 
+        SetMasterTXRX();
+    else
+        SetSlaveTXRX();
+        
     sendBTString("AT");
-    charsRead = receiveBTBuffer(RX_Buffer, 2, 5000);
-    // blinkLEDColor(COLOR_BLUE, charsRead);
-    pulseLEDColor((strstr(RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 400, 100);
+    pulseLEDColor( COLOR_CYAN, 100, 200);
+    
+    sleep(1000);
+    sendBTString("AT");
+    charsRead = receiveBTBuffer(RX_Buffer, 20, 200);
+    pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
     
     // get the MAC address  Expect reply:   OK+ADDR:xxxxxxxxxxxx
+    sleep(1000);
     sendBTString("AT+ADDR?");
-    charsRead = receiveBTBuffer(RX_Buffer, 20, 5000);
-    pulseLEDColor((charsRead == 20) ? COLOR_GREEN : COLOR_YELLOW, 400, 100);
+    charsRead = receiveBTBuffer(RX_Buffer, 20, 400);
     if (charsRead == 20) {
         memcpy(MAC, RX_Buffer + 8, 12);
+        pulseLEDColor( COLOR_GREEN, 100, 200);
         return true;
     } else {
+        pulseLEDColor( COLOR_RED, 100, 200);
         return false;
     }
 }
 
 void    setBTConnection(uint8_t * MAC, bool isMaster){
-    flushBTRXbuffer();
+
+    if (isMaster) 
+        SetMasterTXRX();
+    else
+        SetSlaveTXRX();
+        
+    pulseLEDColor( COLOR_CYAN, 100, 200);
+    sleep(1000);
     sendBTString("AT");
-    charsRead = receiveBTBuffer(RX_Buffer, 4, 100);
-    
-    sendBTString(isMaster ? "AT+ROLE1" : "AT+ROLE0"); // expect OK+Get:0 or 1
-    charsRead = receiveBTBuffer(RX_Buffer, 10, 100);
-    pulseLEDColor((charsRead == 8) ? COLOR_GREEN : COLOR_RED, 400, 100);
-    
-    sendBTString("AT+CON");
-    sendBTBuffer(MAC, MAC_LENGTH, true);
-    charsRead = receiveBTBuffer(RX_Buffer, 9, 100);
-    pulseLEDColor((charsRead == 8) ? COLOR_GREEN : COLOR_RED, 400,100);
-    
-    // Set the baud rate to 38400
-    sendBTString("AT+BAUD2"); // expect OK+Get:0
-    charsRead = receiveBTBuffer(RX_Buffer, 10, 100);
-    pulseLEDColor((charsRead == 8) ? COLOR_GREEN : COLOR_RED, 400, 100);
-    
-    sendBTString("AT+RESET");  // expect OK+RESET
-    charsRead = receiveBTBuffer(RX_Buffer, 10, 100);
-    pulseLEDColor((charsRead == 8) ? COLOR_GREEN : COLOR_RED, 400, 100);
-    
+    charsRead = receiveBTBuffer(RX_Buffer, 9, 100); // could be OK or ATOK+CONN or ATOK+LOST
+    pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
+
+    if (*MAC != 0) {
+        sendBTString("AT+CON");
+        sendBTBuffer(MAC, MAC_LENGTH, true);
+        charsRead = receiveBTBuffer(RX_Buffer, 28, 1000);
+        pulseLEDColor((strstr((void *)RX_Buffer, "OK+CONN") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
+    }
 }    
