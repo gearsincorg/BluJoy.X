@@ -16,8 +16,6 @@
 
 #define BT_TIMEOUT  60000
 
-uint8_t MainBuffer[32];
-
 /*
                          Main application
  */
@@ -52,16 +50,6 @@ void main(void)
         if (USER2_pressed()){
             // Do a factory reset
             doFactoryReset();
-        }
-        
-        sendBTString("HUGS\n");
-        if (receiveBTBuffer(MainBuffer, 5, 1000) >= 5){
-            if (strstr((char *)MainBuffer, "HUGS\n"))
-                pulseLEDColor( COLOR_MAGENTA, 5, 10);
-            else
-                pulseLEDColor( COLOR_RED, 5, 10);
-        } else {
-            pulseLEDColor( COLOR_YELLOW, 5, 10);
         }
     }
     

@@ -87,6 +87,22 @@ void    pairBluetoothDevices(void){
     setBTConnection(slaveMAC, true);    
     setBTConnection(masterMAC, false);    
     
+    // put ports in test mode
+    SetSlaveTXMasterRX();
+
+    while (!USER1_pressed() && !USER2_pressed()) {
+        sendBTString("HUGS\n");
+        if (receiveBTBuffer(RX_Buffer, 5, 1000) == 5){
+            if (strstr((char *)RX_Buffer, "HUGS\n"))
+                pulseLEDColor( COLOR_CYAN, 4, 1);
+            else
+                pulseLEDColor( COLOR_RED, 4, 1);
+        } else {
+            pulseLEDColor( COLOR_YELLOW, 4, 1);
+        }
+        sleep(50);
+    }
+
     // Return ports to normal configuration
     SetSlaveTXRX();
     sleep(1000);
