@@ -11,13 +11,16 @@
 #include "mcc_generated_files/mcc.h"
 #include "configure.h"
 #include "timers.h"
+#include "joystick.h"
 #include "ui.h"
 
 __eeprom uint8_t  EEPROM_uiSpeedMode ;
-__eeprom uint8_t  EEPROM_uiBreakMode ;
+__eeprom uint8_t  EEPROM_uiBrakeMode ;
 
 uint8_t  uiSpeedMode ;
-uint8_t  uiBreakMode ;
+uint8_t  uiBrakeMode ;
+
+uint8_t  timeoutSequence = 0;
 
 uint8_t  R_LED ;
 uint8_t  G_LED ;
@@ -26,13 +29,18 @@ uint8_t  dutyCycle ;
 uint8_t  uiState ;
 uint32_t uiStateTime;
 
-#define UI_IDLE 0
-#define UI_USER1_HOLD 1
-#define UI_USER2_HOLD 2
+#define UI_IDLE             0
+#define UI_USER1_HOLD       1
+#define UI_USER1_DEBOUNCE   2
+#define UI_USER2_HOLD       3
+#define UI_USER2_DEBOUNCE   4
+#define UI_USER12_HOLD      5
+#define UI_USER12_LONG_HOLD 6
 
 #define UI_SPEED_MODES 3
-#define UI_BREAK_MODES 2
-#define UI_MIN_HOLD  150
+#define UI_BRAKE_MODES 2
+#define UI_DEBOUNCE     200
+#define UI_LONG_HOLD   4000
 
 void    initUI(void) {
     R_LED = 0 ;
@@ -41,43 +49,102 @@ void    initUI(void) {
     dutyCycle = 0;
     uiState = UI_IDLE;
     uiStateTime = getTicks();
+    timeoutSequence = 0;
     
     RED_SetHigh();
     GREEN_SetHigh();
     BLUE_SetHigh();
     
     uiSpeedMode = EEPROM_uiSpeedMode;
-    uiBreakMode = EEPROM_uiBreakMode;
+    uiBrakeMode = EEPROM_uiBrakeMode;
     
     TMR3_SetInterruptHandler(UI_PWM_handler);
-    //IOCCF2_SetInterruptHandler(turnPowerOn);
-    
+    IOCCF2_SetInterruptHandler(turnPowerOn);
 }
 
 void    runUI(void) {
+    uint32_t offAirTime;
+    
     switch (uiState) {
         case UI_IDLE:
             if (USER1_pressed()) {
                 uiStateTime = getTicks();
-                uiState = UI_USER1_HOLD; 
+                uiState = UI_USER1_DEBOUNCE; 
             } else if (USER2_pressed()) {
                 uiStateTime = getTicks();
-                uiState = UI_USER2_HOLD; 
+                uiState = UI_USER2_DEBOUNCE; 
+            }
+            break;
+
+        case UI_USER1_DEBOUNCE:
+            if (USER1_pressed()){
+                if (getTicksSince(uiStateTime) > UI_DEBOUNCE) {
+                    uiState = UI_USER1_HOLD;
+                    pulseLEDColor(COLOR_RED, 50, 100);
+                }
+            }
+            else {       
+                uiState = UI_IDLE;
+            }
+            break;
+
+        case UI_USER2_DEBOUNCE:
+            if (USER2_pressed()){
+                if (getTicksSince(uiStateTime) > UI_DEBOUNCE) {
+                    uiState = UI_USER2_HOLD;
+                    pulseLEDColor(COLOR_GREEN, 50, 100);
+                }
+
+            }
+            else {       
+                uiState = UI_IDLE;
             }
             break;
 
         case UI_USER1_HOLD:
-            if (!USER1_pressed() && (getTicksSince(uiStateTime) > UI_MIN_HOLD)) {
-                setUISpeedMode((uiSpeedMode +1) % UI_SPEED_MODES);
-                blinkLEDColor(COLOR_YELLOW, uiSpeedMode + 1);
+            if (!USER1_pressed()){
+                bumpUISpeedMode();
                 uiState = UI_IDLE;
             }
+            if (USER2_pressed()){
+                pulseLEDColor(COLOR_BLUE, 50, 100);
+                uiState = UI_USER12_HOLD;
+            }
+            
             break;
             
         case UI_USER2_HOLD:
-            if (!USER1_pressed() && (getTicksSince(uiStateTime) > UI_MIN_HOLD)) {
-                setUIBreakMode((uiBreakMode +1) % UI_BREAK_MODES);
-                blinkLEDColor(COLOR_CYAN, uiBreakMode + 1);
+            if (!USER2_pressed()){
+                bumpUIBrakeMode();
+                uiState = UI_IDLE;
+            }
+            if (USER1_pressed()){
+                pulseLEDColor(COLOR_BLUE, 50, 100);
+                uiState = UI_USER12_HOLD;
+            }
+            break;
+            
+        case UI_USER12_HOLD:
+            if (getTicksSince(uiStateTime) > UI_LONG_HOLD) {
+                pulseLEDColor(COLOR_WHITE, 50, 100);
+                uiState = UI_USER12_LONG_HOLD;
+            }
+            
+            if (!USER1_pressed() && !USER2_pressed()) {
+                disableJoystick();
+                pairBluetoothDevices();
+                enableJoystick();
+                uiState = UI_IDLE;
+            }
+                
+            break;
+            
+        case UI_USER12_LONG_HOLD:
+            if (!USER1_pressed() && !USER2_pressed()) {
+                disableJoystick();
+                // Do a factory reset
+                doFactoryReset();
+                enableJoystick();
                 uiState = UI_IDLE;
             }
             break;
@@ -85,24 +152,37 @@ void    runUI(void) {
         default:
             break;
     }
+    
+    // Show operational state with 1 sec blink.
+    if (oneSec()) {
+        offAirTime = timeSinceLastReply();
+        if (offAirTime <= 1100)
+            pulseLEDColor(0x010, 2, 1);
+        else if (offAirTime <= (BT_TIMEOUT - 5100))
+            pulseLEDColor(0x110, 2, 1);
+        else
+            pulseLEDColor(0x100, 2, 1);
+    }
 }
 
-void    setUISpeedMode(uint8_t mode){
-    uiSpeedMode = mode;
+void    bumpUISpeedMode(){
+    uiSpeedMode = ((uiSpeedMode +1) % UI_SPEED_MODES);
     EEPROM_uiSpeedMode = uiSpeedMode;
+    blinkLEDColor(COLOR_YELLOW, uiSpeedMode + 1);
 }
 
 uint8_t getUISpeedMode(){
     return (uiSpeedMode);
 }
 
-void    setUIBreakMode(uint8_t mode){
-    uiBreakMode = mode;
-    EEPROM_uiBreakMode = uiBreakMode;
+void    bumpUIBrakeMode(){
+    uiBrakeMode = ((uiBrakeMode +1) % UI_BRAKE_MODES);
+    EEPROM_uiBrakeMode = uiBrakeMode;
+    blinkLEDColor(COLOR_CYAN, uiBrakeMode + 1);
 }
 
 uint8_t getUIBreakMode(){
-    return (uiBreakMode);
+    return (uiBrakeMode);
 }
 
 void    showStartupx(void){
@@ -116,35 +196,23 @@ void    showStartupx(void){
     sleep(1000);
 }
 
-
 void    showStartup(void){
     int8_t ramp = 0;
     
-    for (ramp = 0 ; ramp < 16; ramp++) {
-        R_LED = ramp;
-        sleep(10);
-    }
-    for (ramp = 14 ; ramp >= 0; ramp--) {
-        R_LED = ramp;
-        sleep(10);
-    }
-    for (ramp = 0 ; ramp < 16; ramp++) {
+    for (ramp = 0 ; ramp < 7; ramp++) {
         G_LED = ramp;
-        sleep(10);
+        sleep(40);
     }
-    for (ramp = 14 ; ramp >= 0; ramp--) {
-        G_LED = ramp;
-        sleep(10);
-    }
-    for (ramp = 0 ; ramp < 16; ramp++) {
-        B_LED = ramp;
-        sleep(10);
-    }
-    for (ramp = 14 ; ramp >= 0; ramp--) {
-        B_LED = ramp;
-        sleep(10);
-    }
+    G_LED = 0;
+}
+
+void    showShutdown(void){
+    int8_t ramp = 0;
     
+    for (ramp = 7 ; ramp >= 0; ramp--) {
+        R_LED = ramp;
+        sleep(40);
+    }
 }
 
 /**
@@ -173,26 +241,12 @@ void    blinkLEDColor(uint16_t RGB, uint8_t blinks){
     }
 }
 
-void    UI_PWM_handlerx(void){
-    dutyCycle++;
-    dutyCycle = dutyCycle % 16;
-    if (dutyCycle == 0){
-        if (R_LED > 0) 
-            RED_SetLow();
-        else
-            RED_SetHigh();
-    } else {
-        if (dutyCycle >= R_LED) 
-            RED_SetHigh();
-    }
-}
-
 void    UI_PWM_handler(void){
     // Manage a 16 step PWM Duty cycle for the 3 LEDs that form the RGB LED
     // Set the output low to turn on each cycle at dutyCycle = 0 (if required)
     // Set the output High when the required dutyCycle is reached for each LED
-    dutyCycle++;
-    dutyCycle = dutyCycle % 16;  //
+    dutyCycle = (dutyCycle+1) & 0x0F;
+    // Turn on each color if has any brightness above 0
     if (dutyCycle == 0){
         if (R_LED > 0) 
             RED_SetLow();
@@ -209,6 +263,7 @@ void    UI_PWM_handler(void){
         else
             BLUE_SetHigh();
     } else {
+        // Turn off each color once the duty cycle goes over it's brightness
         if (dutyCycle >= R_LED) 
             RED_SetHigh();
         if (dutyCycle >= G_LED) 

@@ -16,7 +16,6 @@ void    initConfiguration() {
     
     setSerialBaud(38400);
     SetSlaveTXRX();
-    showStartup();
 }
 
 void    SetSlaveTXRX(void){
@@ -55,7 +54,7 @@ void    turnPowerOn(){
 
 void    turnPowerOff(){
     POWER_EN_SetHigh();
-    powerOn = true;
+    powerOn = false;
 }
 
 bool    powerIsOn() {
@@ -65,12 +64,12 @@ bool    powerIsOn() {
 void    setSerialBaud(uint16_t baud){
     if (baud == 38400) {
         // 38400
-        SP1BRGL = 0x33;
+        SP1BRGL = 0x67;
         SP1BRGH = 0x00;
     } else {
         // 9600
-        SP1BRGL = 0xCF;
-        SP1BRGH = 0x00;
+        SP1BRGL = 0xA0;
+        SP1BRGH = 0x01;
     }
     sleep(200);
 }
@@ -113,7 +112,7 @@ void    setBTBaudRatesTo38400() {
     // This will be ignored if they are already there.
     SetDualReceive();
     setSerialBaud(9600);
-    sleep(1000);
+    pulseLEDColor(COLOR_CYAN, 100, 900);
     
     sendBTString("AT");
     sleep(100);
@@ -136,19 +135,18 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster) {
         SetSlaveTXRX();
         
     sendBTString("AT");
-    pulseLEDColor( COLOR_CYAN, 100, 200);
-    
-    sleep(1000);
+    sleep(300);  // was pulse
+    sleep(10);
     if (isMaster) 
         sendBTString("AT+ROLE1");
     else
         sendBTString("AT+ROLE0");
         
-    charsRead = receiveBTBuffer(RX_Buffer, 20, 200);
+    charsRead = receiveBTBuffer(RX_Buffer, 20, 400);
     pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
     
     // get the MAC address  Expect reply:   OK+ADDR:xxxxxxxxxxxx
-    sleep(1000);
+    // sleep(10);  // need to keep short to stay disconnected.
     sendBTString("AT+ADDR?");
     charsRead = receiveBTBuffer(RX_Buffer, 30, 400);
     addrPointer = (void *)strstr(RX_Buffer, "ADDR:");
@@ -170,18 +168,17 @@ void    setBTConnection(uint8_t * MAC, bool isMaster){
     else
         SetSlaveTXRX();
         
-    pulseLEDColor( COLOR_CYAN, 100, 200);
     sleep(1000);
     sendBTString("AT");
     charsRead = receiveBTBuffer(RX_Buffer, 9, 100); // could be OK or ATOK+CONN or ATOK+LOST
     pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
 
-    sleep(1000);
+    sleep(10); // ????
     if (*MAC != 0) {
         sendBTString("AT+CON");
         sendBTBuffer(MAC, MAC_LENGTH, true);
         charsRead = receiveBTBuffer(RX_Buffer, 28, 1000);
-        pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
+        pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_RED, 100, 200);
     }
 }    
 
@@ -203,6 +200,7 @@ void    doFactoryReset() {
     setSerialBaud(9600);
    
     sendBTString("AT+RENEW");
+    charsRead = receiveBTBuffer(RX_Buffer, 16, 100); 
     pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
     sleep(1000);
     

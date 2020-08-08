@@ -14,6 +14,9 @@
 #include "mcc_generated_files/pin_manager.h"
 
 // Function declarations
+void    enableJoystick(void);
+void    disableJoystick(void);
+
 void    initJoystick(void);
 void    readJoystick(void);
 void    togglePower(void) ;

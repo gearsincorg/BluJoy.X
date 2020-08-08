@@ -77,8 +77,8 @@ void TMR3_Initialize(void)
     //TMR3H 255; 
     TMR3H = 0xFF;
 
-    //TMR3L 131; 
-    TMR3L = 0x83;
+    //TMR3L 6; 
+    TMR3L = 0x06;
 
     // Clearing IF flag before enabling the interrupt.
     PIR4bits.TMR3IF = 0;

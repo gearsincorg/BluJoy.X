@@ -5,15 +5,30 @@
 
 uint32_t    systemTime;
 uint32_t    lastBTTime;
+bool        oneSecBlink;
 
 void        initTimers(void){
     systemTime = 0;
     lastBTTime = 0;
+    oneSecBlink = false;
     TMR2_SetInterruptHandler(timeKeeper);
 }
 
 void        timeKeeper(void){
     systemTime++;
+    
+    // Look for 1024 ms interval.  0x03FF = 1023
+    if ((systemTime & 0x03FF) == 0)
+        oneSecBlink = true;
+}
+
+bool    oneSec(void) {
+    if (oneSecBlink) {
+        oneSecBlink = false;
+        return true;
+    } else {
+        return false;
+    }
 }
 
 void        sleep(uint32_t delay){
@@ -33,6 +48,6 @@ void       resetBTTimer(void){
     lastBTTime = systemTime;
 }
 
-uint32_t   timeSincelLastReply(void){
+uint32_t   timeSinceLastReply(void){
     return (systemTime - lastBTTime);
 }

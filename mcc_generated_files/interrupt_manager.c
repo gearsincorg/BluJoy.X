@@ -52,9 +52,25 @@
 void __interrupt() INTERRUPT_InterruptManager (void)
 {
     // interrupt handler
-    if(INTCONbits.PEIE == 1)
+    if(PIE0bits.IOCIE == 1 && PIR0bits.IOCIF == 1)
     {
-        if(PIE3bits.RC1IE == 1 && PIR3bits.RC1IF == 1)
+        PIN_MANAGER_IOC();
+    }
+    else if(INTCONbits.PEIE == 1)
+    {
+        if(PIE4bits.TMR3IE == 1 && PIR4bits.TMR3IF == 1)
+        {
+            TMR3_ISR();
+        } 
+        else if(PIE4bits.TMR2IE == 1 && PIR4bits.TMR2IF == 1)
+        {
+            TMR2_ISR();
+        } 
+        else if(PIE4bits.TMR1IE == 1 && PIR4bits.TMR1IF == 1)
+        {
+            TMR1_ISR();
+        } 
+        else if(PIE3bits.RC1IE == 1 && PIR3bits.RC1IF == 1)
         {
             EUSART1_RxDefaultInterruptHandler();
         } 
@@ -62,23 +78,7 @@ void __interrupt() INTERRUPT_InterruptManager (void)
         {
             EUSART1_TxDefaultInterruptHandler();
         } 
-        else if(PIE4bits.TMR2IE == 1 && PIR4bits.TMR2IF == 1)
-        {
-            TMR2_ISR();
-        } 
-        else if(PIE4bits.TMR3IE == 1 && PIR4bits.TMR3IF == 1)
-        {
-            TMR3_ISR();
-        } 
-        else
-        {
-            //Unhandled Interrupt
-        }
     }      
-    else
-    {
-        //Unhandled Interrupt
-    }
 }
 /**
  End of File

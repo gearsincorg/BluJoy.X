@@ -14,8 +14,6 @@
 #include "configure.h"
 #include "ui.h"
 
-#define BT_TIMEOUT  60000
-
 /*
                          Main application
  */
@@ -25,10 +23,9 @@ void main(void)
     SYSTEM_Initialize();
     initTimers();   
     initSerial();   
+    initJoystick();   
     initUI();   
- 
-    turnPowerOn();
-
+    
     // Enable the Global Interrupts
     INTERRUPT_GlobalInterruptEnable();
 
@@ -36,49 +33,32 @@ void main(void)
     INTERRUPT_PeripheralInterruptEnable();
 
     initConfiguration();
+
+    turnPowerOn();
+    showStartup();
+    
     sleep(1000);
+    enableJoystick();
            
     while (1) {
-        sleep(50);
+        runUI();
         
-        // check to see if we should initialize the master and slave devices
-        if (USER1_pressed()){
-            // Configure Master and Slave devices
-            pairBluetoothDevices();
-        }
-                
-        if (USER2_pressed()){
-            // Do a factory reset
-            doFactoryReset();
-        }
-    }
-    
-    // check to see if we should initialize the master and slave devices
-    if (USER1_pressed() && USER1_pressed()){
-        // Configure Master and Slave devices
-        pairBluetoothDevices();
-        
-        // Also init any NV memory
-        setUISpeedMode(0);
-        setUIBreakMode(0);
-    } else {
-        // if we get here, it's time to play
-        initJoystick();   
+        // check to see if we should shut down the power
+        if (timeSinceLastReply() > BT_TIMEOUT) {
+            turnPowerOff();
+            showShutdown();
 
-        while(1)
-        {
-            // keep an eye out loss of bluetooth
-            if (timeSincelLastReply() > BT_TIMEOUT){
-                // power down the BT and Joystick and wait for wakeup
-                turnPowerOff();
-                SLEEP();
-                
-                while (!powerIsOn());
-                
+            SLEEP();
+            NOP();
+            
+            while (!powerIsOn()) {
+              pulseLEDColor(COLOR_BLUE, 2, 98);
             }
-            runUI();
-            sleep(50);
+            showStartup();
+            resetBTTimer();
         }
+
+        sleep(50);
     }
     
     // Disable the Global Interrupts
