@@ -44,16 +44,15 @@ void main(void)
         runUI();
         
         // check to see if we should shut down the power
-        if (timeSinceLastReply() > BT_TIMEOUT) {
+        if (BTTimeRemaining() == 0) {
             turnPowerOff();
             showShutdown();
 
             SLEEP();
             NOP();
             
-            while (!powerIsOn()) {
-              pulseLEDColor(COLOR_BLUE, 2, 98);
-            }
+            while (!powerIsOn()) ;
+            
             showStartup();
             resetBTTimer();
         }

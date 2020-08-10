@@ -59,11 +59,12 @@ void    initUI(void) {
     uiBrakeMode = EEPROM_uiBrakeMode;
     
     TMR3_SetInterruptHandler(UI_PWM_handler);
+    IOCCF0_SetInterruptHandler(turnPowerOn);
     IOCCF2_SetInterruptHandler(turnPowerOn);
 }
 
 void    runUI(void) {
-    uint32_t offAirTime;
+    int32_t timeRemaining;
     
     switch (uiState) {
         case UI_IDLE:
@@ -155,13 +156,13 @@ void    runUI(void) {
     
     // Show operational state with 1 sec blink.
     if (oneSec()) {
-        offAirTime = timeSinceLastReply();
-        if (offAirTime <= 1100)
-            pulseLEDColor(0x010, 2, 1);
-        else if (offAirTime <= (BT_TIMEOUT - 5100))
+        timeRemaining = BTTimeRemaining();
+        if (timeRemaining < 5000)
+            pulseLEDColor(0x100, 2, 1);
+        else if (timeRemaining < 15000)
             pulseLEDColor(0x110, 2, 1);
         else
-            pulseLEDColor(0x100, 2, 1);
+            pulseLEDColor(0x010, 2, 1);
     }
 }
 
@@ -185,17 +186,6 @@ uint8_t getUIBreakMode(){
     return (uiBrakeMode);
 }
 
-void    showStartupx(void){
-    R_LED = 0x0;
-    sleep(1000);
-    R_LED = 0x1;
-    sleep(1000);
-    R_LED = 0x8;
-    sleep(1000);
-    R_LED = 0x10;
-    sleep(1000);
-}
-
 void    showStartup(void){
     int8_t ramp = 0;
     
@@ -204,6 +194,7 @@ void    showStartup(void){
         sleep(40);
     }
     G_LED = 0;
+    setBTTimeout(BT_STARTTIME);  // Start out with a shorter timeout
 }
 
 void    showShutdown(void){

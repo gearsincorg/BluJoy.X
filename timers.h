@@ -9,7 +9,8 @@
 #ifndef TIMERS_HEADER_H
 #define	TIMERS_HEADER_H
 
-#define BT_TIMEOUT  20000
+#define BT_STARTTIME  6000
+#define BT_TIMEOUT   30000
 
 #include <xc.h> // include processor files - each processor file is guarded.  
 #include "mcc_generated_files/tmr2.h"
@@ -17,12 +18,13 @@
 void        initTimers(void);
 void        timeKeeper(void);
 void        sleep(uint32_t delay);
-uint32_t    timeSinceLastReply(void);
-void        resetBTTimer(void);
 uint32_t    getTicks(void);
 int32_t     getTicksSince(uint32_t from);
 bool        oneSec(void);
 
+void        resetBTTimer(void);
+void        setBTTimeout(uint32_t timeout);
+int32_t     BTTimeRemaining(void);
 
 #ifdef	__cplusplus
 extern "C" {

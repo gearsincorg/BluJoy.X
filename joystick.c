@@ -108,6 +108,7 @@ void    readJoystick(void) {
         while (EUSART1_is_rx_ready()) {
             if (EUSART1_Read() == '/') {
                 resetBTTimer();
+                setBTTimeout(BT_TIMEOUT);  // engage longer timeout
             }
         }
     }

@@ -51,6 +51,7 @@
 
 
 
+void (*IOCCF0_InterruptHandler)(void);
 void (*IOCCF2_InterruptHandler)(void);
 
 
@@ -110,15 +111,22 @@ void PIN_MANAGER_Initialize(void)
     IOCx registers 
     */
     //interrupt on change for group IOCCF - flag
+    IOCCFbits.IOCCF0 = 0;
+    //interrupt on change for group IOCCF - flag
     IOCCFbits.IOCCF2 = 0;
     //interrupt on change for group IOCCN - negative
+    IOCCNbits.IOCCN0 = 1;
+    //interrupt on change for group IOCCN - negative
     IOCCNbits.IOCCN2 = 1;
+    //interrupt on change for group IOCCP - positive
+    IOCCPbits.IOCCP0 = 0;
     //interrupt on change for group IOCCP - positive
     IOCCPbits.IOCCP2 = 0;
 
 
 
     // register default IOC callback functions at runtime; use these methods to register a custom function
+    IOCCF0_SetInterruptHandler(IOCCF0_DefaultInterruptHandler);
     IOCCF2_SetInterruptHandler(IOCCF2_DefaultInterruptHandler);
    
     // Enable IOCI interrupt 
@@ -131,11 +139,46 @@ void PIN_MANAGER_Initialize(void)
   
 void PIN_MANAGER_IOC(void)
 {   
+	// interrupt on change for pin IOCCF0
+    if(IOCCFbits.IOCCF0 == 1)
+    {
+        IOCCF0_ISR();  
+    }	
 	// interrupt on change for pin IOCCF2
     if(IOCCFbits.IOCCF2 == 1)
     {
         IOCCF2_ISR();  
     }	
+}
+
+/**
+   IOCCF0 Interrupt Service Routine
+*/
+void IOCCF0_ISR(void) {
+
+    // Add custom IOCCF0 code
+
+    // Call the interrupt handler for the callback registered at runtime
+    if(IOCCF0_InterruptHandler)
+    {
+        IOCCF0_InterruptHandler();
+    }
+    IOCCFbits.IOCCF0 = 0;
+}
+
+/**
+  Allows selecting an interrupt handler for IOCCF0 at application runtime
+*/
+void IOCCF0_SetInterruptHandler(void (* InterruptHandler)(void)){
+    IOCCF0_InterruptHandler = InterruptHandler;
+}
+
+/**
+  Default interrupt handler for IOCCF0
+*/
+void IOCCF0_DefaultInterruptHandler(void){
+    // add your IOCCF0 interrupt custom code
+    // or set custom function using IOCCF0_SetInterruptHandler()
 }
 
 /**
