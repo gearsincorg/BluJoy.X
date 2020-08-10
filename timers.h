@@ -9,7 +9,7 @@
 #ifndef TIMERS_HEADER_H
 #define	TIMERS_HEADER_H
 
-#define BT_STARTTIME  6000
+#define BT_STARTTIME 10000
 #define BT_TIMEOUT   30000
 
 #include <xc.h> // include processor files - each processor file is guarded.  

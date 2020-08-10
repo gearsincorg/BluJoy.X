@@ -18,13 +18,14 @@
 
 #define     SHIFT_BITS      2
 #define     AXIAL_ACC_LIMIT 600      //  mm/s/s
-#define     YAW_ACC_LIMIT   90       //  deg/s/s
-#define     SWEEP_ACC_LIMIT 30       //  deg/s/s   
-#define     CYCLE_PER_SEC   20       
+#define     YAW_STOP_LIMIT 1000      //  deg/s/s 
+#define     YAW_ACC_LIMIT   100      //  deg/s/s 
+#define     SWEEP_ACC_LIMIT  50      //  deg/s/s   
+#define     CYCLE_PER_SEC    20       
 
 #define     TOP_AXIAL_SPEED 500
-#define     TOP_YAW_SPEED   90
-#define     TOP_SWEEP_SPEED 60
+#define     TOP_YAW_SPEED   70
+#define     TOP_SWEEP_SPEED 50
 
 bool        joystickEnabled  = false;
 
@@ -40,6 +41,7 @@ int16_t     accelYawFP   = 0;
 
 int16_t     accelLimitAxialFP   = (AXIAL_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
 int16_t     accelLimitYawFP     = (YAW_ACC_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitYawStopFP = (YAW_STOP_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
 int16_t     accelLimitSweepFP   = (SWEEP_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
 
 int16_t     topAxialSpeedFP   = (TOP_AXIAL_SPEED << SHIFT_BITS) ;
@@ -97,8 +99,10 @@ void    readJoystick(void) {
                 accelYawFP   = accelLimitSweepFP;
             }
         }
-        else
+        else {
             targetYawFP =   0;
+            accelYawFP   = accelLimitYawStopFP;
+        }
 
         // calculate motion profile and send to serial port.
         calculateMotion();
