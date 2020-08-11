@@ -4,10 +4,12 @@
 #include "timers.h"
 
 #define SPEED_CMD_LENGTH  12 
+#define ESTOP_CMD_LENGTH  8 
 
 extern volatile uint8_t eusart1TxBufferRemaining;
 
 uint8_t speedBuffer[SPEED_CMD_LENGTH] ;
+uint8_t estopBuffer[ESTOP_CMD_LENGTH] = {'/', 0, 0, 0xFF, 0, 0, 0, '\n'};
 
 void    initSerial(void) {
  
@@ -27,11 +29,16 @@ bool    sendBTSpeedCmd(int16_t  axial, int16_t yaw,  bool blockIfBusy) {
     return sendBTBuffer((void *)speedBuffer, sizeof(speedBuffer), blockIfBusy);
 }
 
+bool     sendBTEstopCmd(void){
+    calcCRC(estopBuffer);
+    return sendBTBuffer((void *)estopBuffer, sizeof(estopBuffer), true);
+}
+
 void    sendBTString(char * buffer) {
     flushBTRXbuffer();
     sendBTBuffer((void *)buffer, strlen(buffer), true);
 }
-
+ 
 bool    sendBTBuffer(uint8_t * buffer, uint8_t length, bool blockIfBusy) {
     if (blockIfBusy || (eusart1TxBufferRemaining > length)){
         while (length > 0) {

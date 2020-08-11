@@ -15,6 +15,8 @@
 // TODO Insert declarations
 void     initSerial(void);
 bool     sendBTSpeedCmd(int16_t  axial, int16_t yaw, bool blockIfBusy) ;
+bool     sendBTEstopCmd(void);
+
 void     sendBTString(char * command);
 void     flushBTRXbuffer(void);
 

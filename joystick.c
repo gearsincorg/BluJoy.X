@@ -16,6 +16,8 @@
 
 #define     MAX_REPLY       2
 
+#define     ESTOP_HOLD      1000
+
 #define     SHIFT_BITS      2
 #define     AXIAL_ACC_LIMIT 600      //  mm/s/s
 #define     YAW_STOP_LIMIT 1000      //  deg/s/s 
@@ -28,6 +30,9 @@
 #define     TOP_SWEEP_SPEED 50
 
 bool        joystickEnabled  = false;
+bool        estopPending     = false;
+bool        estopActive      = false;
+uint32_t    estopTimer       = 0;
 
 uint8_t     replyBuffer[4 * MAX_REPLY];
 int16_t     targetAxialFP = 0;
@@ -72,41 +77,66 @@ void    readJoystick(void) {
     
     accelAxialFP = accelLimitAxialFP;
     accelYawFP   = accelLimitYawFP;
-    uint8_t      LEDon;
-
+    
     if (joystickEnabled) {
+
+        // check for estop condition
+        if (JSBU_GetValue() == 0) {
+            if (estopPending){
+                if (getTicksSince(estopTimer) > ESTOP_HOLD) {
+                    estopActive = true;
+                }
+            } else {
+                estopTimer = getTicks();
+                estopPending = true;
+            }
+        } else {
+            estopPending = false;
+            estopActive  = false;
+        }
         
-        if (JSUP_GetValue() == 0)
-            targetAxialFP =  topAxialSpeedFP;
-        else if (JSDO_GetValue() == 0)
-            targetAxialFP = -topAxialSpeedFP;
-        else
-            targetAxialFP =   0;
+        if (estopActive){
+            sendBTEstopCmd();
+            
+            targetAxialFP   = 0;
+            targetYawFP     = 0;
+            limitedAxialFP  = 0;
+            limitedYawFP    = 0;
+        } else {
+            // run regular joystick processing
+            
+            if (JSUP_GetValue() == 0)
+                targetAxialFP =  topAxialSpeedFP;
+            else if (JSDO_GetValue() == 0)
+                targetAxialFP = -topAxialSpeedFP;
+            else
+                targetAxialFP =   0;
 
-        if (JSRI_GetValue() == 0){
-            if (targetAxialFP == 0)
-                targetYawFP =  topYawSpeedFP;
-            else {
-                targetYawFP =  topSweepSpeedFP;
-                accelYawFP   = accelLimitSweepFP;
+            if (JSRI_GetValue() == 0){
+                if (targetAxialFP == 0)
+                    targetYawFP =  topYawSpeedFP;
+                else {
+                    targetYawFP =  topSweepSpeedFP;
+                    accelYawFP   = accelLimitSweepFP;
+                }
             }
-        }
-        else if (JSLE_GetValue() == 0){
-            if (targetAxialFP == 0)
-                targetYawFP =  -topYawSpeedFP;
-            else {
-                targetYawFP =  -topSweepSpeedFP;
-                accelYawFP   = accelLimitSweepFP;
+            else if (JSLE_GetValue() == 0){
+                if (targetAxialFP == 0)
+                    targetYawFP =  -topYawSpeedFP;
+                else {
+                    targetYawFP =  -topSweepSpeedFP;
+                    accelYawFP   = accelLimitSweepFP;
+                }
             }
+            else {
+                targetYawFP =   0;
+                accelYawFP   = accelLimitYawStopFP;
+            }
+            
+            // calculate motion profile and send to serial port.
+            calculateMotion();
+            sendBTSpeedCmd(limitedAxialFP >> SHIFT_BITS, limitedYawFP >> SHIFT_BITS, false);
         }
-        else {
-            targetYawFP =   0;
-            accelYawFP   = accelLimitYawStopFP;
-        }
-
-        // calculate motion profile and send to serial port.
-        calculateMotion();
-        sendBTSpeedCmd(limitedAxialFP >> SHIFT_BITS, limitedYawFP >> SHIFT_BITS, false);
 
         // check for recent replies
         while (EUSART1_is_rx_ready()) {
@@ -115,7 +145,9 @@ void    readJoystick(void) {
                 setBTTimeout(BT_TIMEOUT);  // engage longer timeout
             }
         }
+        
     }
+    
 }
     
 void    calculateMotion(void) {

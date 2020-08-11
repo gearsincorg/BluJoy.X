@@ -9,10 +9,12 @@
             <file>file:/D:/MyPicProjects/BluJoy.X/timers.h</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/mcc_generated_files/pin_manager.c</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/ui.h</file>
+            <file>file:/D:/MyPicProjects/BluJoy.X/serial.c</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/joystick.c</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/configure.c</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/ui.c</file>
             <file>file:/D:/MyPicProjects/BluJoy.X/mcc_generated_files/device_config.c</file>
+            <file>file:/D:/MyPicProjects/BluJoy.X/serial.h</file>
         </group>
     </open-files>
 </project-private>
