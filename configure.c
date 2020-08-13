@@ -149,7 +149,7 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster) {
     // sleep(10);  // need to keep short to stay disconnected.
     sendBTString("AT+ADDR?");
     charsRead = receiveBTBuffer(RX_Buffer, 30, 400);
-    addrPointer = (void *)strstr(RX_Buffer, "ADDR:");
+    addrPointer = (void *)strstr((void *)RX_Buffer, "ADDR:");
             
     if (addrPointer != 0) {
         memcpy(MAC, addrPointer + 5, 12);
