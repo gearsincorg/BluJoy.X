@@ -26,6 +26,7 @@ void    doFactoryReset(void);
 void    turnPowerOn(void);
 void    turnPowerOff(void);
 
+
 #ifdef	__cplusplus
 extern "C" {
 #endif /* __cplusplus */

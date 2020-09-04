@@ -18,7 +18,7 @@ __eeprom uint8_t  EEPROM_uiSpeedMode ;
 __eeprom uint8_t  EEPROM_uiBrakeMode ;
 
 uint8_t  uiSpeedMode ;
-uint8_t  uiBrakeMode ;
+uint8_t  uiType ;
 
 uint8_t  timeoutSequence = 0;
 
@@ -56,7 +56,7 @@ void    initUI(void) {
     BLUE_SetHigh();
     
     uiSpeedMode = EEPROM_uiSpeedMode;
-    uiBrakeMode = EEPROM_uiBrakeMode;
+    uiType      = EEPROM_uiBrakeMode;
     
     TMR3_SetInterruptHandler(UI_PWM_handler);
     IOCCF0_SetInterruptHandler(turnPowerOn);
@@ -80,8 +80,8 @@ void    runUI(void) {
         case UI_USER1_DEBOUNCE:
             if (USER1_pressed()){
                 if (getTicksSince(uiStateTime) > UI_DEBOUNCE) {
+                    pulseLEDColor(COLOR_RED, 20, 100);
                     uiState = UI_USER1_HOLD;
-                    pulseLEDColor(COLOR_RED, 100, 100);
                 }
             }
             else {       
@@ -92,8 +92,8 @@ void    runUI(void) {
         case UI_USER2_DEBOUNCE:
             if (USER2_pressed()){
                 if (getTicksSince(uiStateTime) > UI_DEBOUNCE) {
+                    pulseLEDColor(COLOR_GREEN, 20, 100);
                     uiState = UI_USER2_HOLD;
-                    pulseLEDColor(COLOR_GREEN, 100, 100);
                 }
             }
             else {       
@@ -114,7 +114,7 @@ void    runUI(void) {
             
         case UI_USER2_HOLD:
             if (!USER2_pressed()){
-                bumpUIBrakeMode();
+                bumpUIType();
                 uiState = UI_IDLE;
             }
             if (USER1_pressed()){
@@ -144,7 +144,6 @@ void    runUI(void) {
                 doFactoryReset();
                 enableJoystick();
                 uiState = UI_IDLE;
- 
             }
             break;
             
@@ -174,14 +173,15 @@ uint8_t getUISpeedMode(){
     return (uiSpeedMode);
 }
 
-void    bumpUIBrakeMode(){
-    uiBrakeMode = ((uiBrakeMode +1) % UI_BRAKE_MODES);
-    EEPROM_uiBrakeMode = uiBrakeMode;
-    blinkLEDColor(COLOR_CYAN, uiBrakeMode + 1);
+void    bumpUIType(){
+    uiType = ((uiType +1) % UI_BRAKE_MODES);
+    EEPROM_uiBrakeMode = uiType;
+    blinkLEDColor(COLOR_CYAN, uiType + 1);
+    setJoystickType(uiType);
 }
 
-uint8_t getUIBreakMode(){
-    return (uiBrakeMode);
+uint8_t getUIType(){
+    return (uiType);
 }
 
 void    showStartup(void){
