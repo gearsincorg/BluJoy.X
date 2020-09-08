@@ -13,7 +13,6 @@ uint8_t charsRead;
 bool    powerOn = false;
 
 void    initConfiguration() {
-    
     setSerialBaud(38400);
     SetSlaveTXRX();
 }
@@ -21,6 +20,13 @@ void    initConfiguration() {
 void    SetSlaveTXRX(void){
     RX1DTPPS = 0x15;   //        RC5->EUSART1:RX1;    
     RC4PPS = 0x0F;     //EUSART1:TX1->RC4 ;    
+    RC6PPS = 0x16;     //        RC6->RC6;    
+    // sleep(5);
+}
+
+void    SetPowerdownTXRX(void){
+    RX1DTPPS = 0x15;   //        RC5->EUSART1:RX1;    
+    RC4PPS = 0x14;     //        RC4->RC4;    
     RC6PPS = 0x16;     //        RC6->RC6;    
     sleep(5);
 }
@@ -49,11 +55,14 @@ void    SetSlaveTXMasterRX(void){
 
 void    turnPowerOn(){
     POWER_EN_SetLow();
+    TRISC = 0xAF;  // Pins 4 and 6 are outputs
+    SetSlaveTXRX();
     powerOn = true;
 }
 
 void    turnPowerOff(){
     POWER_EN_SetHigh();
+    SetPowerdownTXRX();
     powerOn = false;
 }
 
