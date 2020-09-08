@@ -8,11 +8,13 @@
 #define DEBUG_CMD_LENGTH  16
 
 #define MAX_SPEED_MMPS    5000
-#define MAX_YAW_DPS       1300
+#define MAX_YAW_DPS       5000
+
+// #define MAX_YAW_DPS       1300
 
 extern volatile uint8_t eusart1TxBufferRemaining;
 
-bool    sendDebugText = true;
+bool    sendDebugText = false;
 
 uint8_t speedBuffer[SPEED_CMD_LENGTH] ;
 uint8_t estopBuffer[ESTOP_CMD_LENGTH] = {'/', 0, 0, 0xFF, 0, 0, 0, '\n'};

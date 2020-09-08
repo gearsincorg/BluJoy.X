@@ -145,7 +145,7 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster) {
     pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
     
     // get the MAC address  Expect reply:   OK+ADDR:xxxxxxxxxxxx
-    // sleep(10);  // need to keep short to stay disconnected.
+    sleep(10);  // need to keep short to stay disconnected, dut long enough to process prior command.
     sendBTString("AT+ADDR?");
     charsRead = receiveBTBuffer(RX_Buffer, 30, 400);
     addrPointer = (void *)strstr((void *)RX_Buffer, "ADDR:");
