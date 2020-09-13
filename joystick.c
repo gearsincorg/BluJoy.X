@@ -19,7 +19,7 @@
 #define     ESTOP_HOLD      1000
 
 #define     SHIFT_BITS      2
-#define     DEAD_BAND       16
+#define     DEAD_BAND       512
 
 #define     AXIAL_ACC_LIMIT 800      //  mm/s/s
 #define     YAW_STOP_LIMIT 1500      //  deg/s/s 
@@ -31,8 +31,8 @@
 #define     TOP_YAW_SPEED    70      //  deg/s  70    
 #define     TOP_SWEEP_SPEED  50      //  deg/s      
 
-#define     TOP_AXIAL_POT_SPEED 2000   //  mm/s  500
-#define     TOP_YAW_POT_SPEED   60     //  deg/s  70    
+#define     TOP_AXIAL_POT_SPEED 500 //  mm/s  500
+#define     TOP_YAW_POT_SPEED   60  //  deg/s  70    
 
 uint8_t     joystickType    = JOYSTICK_BUTTONS;
 bool        joystickEnabled = false;
@@ -79,6 +79,10 @@ void    disableJoystick(){
     TMR1_StopTimer();
     joystickEnabled = false;
     TMR1_StopTimer();
+}
+
+uint8_t getJoystickType(void) {
+    return joystickType;
 }
 
 void    setJoystickType(uint8_t jsType) {
@@ -175,8 +179,10 @@ void    readJoystick(void) {
 
 void    readButtonJoystick(void) {
     
-    accelAxialFP = accelLimitAxialFP;
-    accelYawFP   = accelLimitYawFP;
+    // accelAxialFP = accelLimitAxialFP;
+    // accelYawFP   = accelLimitYawFP;
+    accelAxialFP = 2048;
+    accelYawFP   = 2048;
     
     // run regular joystick processing
     if (JSUP_GetValue() == 0)
@@ -230,8 +236,12 @@ void    readPotJoystick(void) {
 
 int16_t deadband(int16_t jsValue, int16_t center){
     jsValue -= center ;
-    if ((jsValue < DEAD_BAND) && (jsValue > -DEAD_BAND)) {
-        jsValue = 0;
+    if (jsValue > DEAD_BAND) {
+        jsValue = (int16_t)(((int32_t)(jsValue - DEAD_BAND) * 2048) / (2048 - DEAD_BAND));
+    } else if (jsValue < -DEAD_BAND) {
+        jsValue = (int16_t)(((int32_t)(jsValue + DEAD_BAND) * 2048) / (2048 - DEAD_BAND));
+    } else {
+        return 0;
     }
     return jsValue;
 }

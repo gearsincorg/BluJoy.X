@@ -4,6 +4,7 @@
 #include "serial.h"
 #include "timers.h"
 #include "ui.h"
+#include "joystick.h"
 
 uint8_t slaveMAC[MAC_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0};
 uint8_t masterMAC[MAC_LENGTH] = {0,0,0,0,0,0,0,0,0,0,0,0};
