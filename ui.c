@@ -37,9 +37,9 @@ uint32_t uiStateTime;
 #define UI_USER12_HOLD      5
 #define UI_USER12_LONG_HOLD 6
 
-#define UI_SPEED_MODES 3
+#define UI_SPEED_MODES 10
 #define UI_BRAKE_MODES 2
-#define UI_DEBOUNCE     200
+#define UI_DEBOUNCE     100
 #define UI_LONG_HOLD   4000
 
 void    initUI(void) {
@@ -167,6 +167,7 @@ void    bumpUISpeedMode(){
     uiSpeedMode = ((uiSpeedMode +1) % UI_SPEED_MODES);
     EEPROM_uiSpeedMode = uiSpeedMode;
     blinkLEDColor(COLOR_YELLOW, uiSpeedMode + 1);
+    setJoystickSpeed(uiSpeedMode);
 }
 
 uint8_t getUISpeedMode(){

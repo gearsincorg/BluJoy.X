@@ -27,6 +27,8 @@ void    stopMotion(void);
 void    initJoystick(void);
 uint8_t getJoystickType(void);
 void    setJoystickType(uint8_t jsType);
+void    setJoystickSpeed(int8_t jsSpeedMode);
+
 int16_t deadband(int16_t jsValue, int16_t center);
 void    readJoystick(void);
 void    readButtonJoystick(void);

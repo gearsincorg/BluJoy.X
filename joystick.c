@@ -21,18 +21,15 @@
 #define     SHIFT_BITS      2
 #define     DEAD_BAND       512
 
-#define     AXIAL_ACC_LIMIT 800      //  mm/s/s
-#define     YAW_STOP_LIMIT 1500      //  deg/s/s 
-#define     YAW_ACC_LIMIT   200      //  deg/s/s 
-#define     SWEEP_ACC_LIMIT  80      //  deg/s/s   
+#define     AXIAL_ACC_LIMIT 600      //  mm/s/s
+#define     YAW_STOP_LIMIT 2048      //  deg/s/s 
+#define     YAW_ACC_LIMIT   400      //  deg/s/s 
+#define     SWEEP_ACC_LIMIT 100      //  deg/s/s   
 #define     CYCLE_PER_SEC    20       
 
-#define     TOP_AXIAL_SPEED 500      //  mm/s  500
-#define     TOP_YAW_SPEED    70      //  deg/s  70    
-#define     TOP_SWEEP_SPEED  50      //  deg/s      
-
-#define     TOP_AXIAL_POT_SPEED 500 //  mm/s  500
-#define     TOP_YAW_POT_SPEED   60  //  deg/s  70    
+#define     TOP_AXIAL_SPEED 300      //  mm/s  
+#define     TOP_YAW_SPEED    30      //  deg/s  
+#define     TOP_SWEEP_SPEED  15      //  deg/s      
 
 uint8_t     joystickType    = JOYSTICK_BUTTONS;
 bool        joystickEnabled = false;
@@ -58,17 +55,24 @@ int16_t     accelLimitYawFP     = (YAW_ACC_LIMIT   << SHIFT_BITS) / CYCLE_PER_SE
 int16_t     accelLimitYawStopFP = (YAW_STOP_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
 int16_t     accelLimitSweepFP   = (SWEEP_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
 
-int16_t     topAxialSpeedFP = (TOP_AXIAL_SPEED << SHIFT_BITS) ;
-int16_t     topYawSpeedFP   = (TOP_YAW_SPEED   << SHIFT_BITS) ;
-int16_t     topSweepSpeedFP = (TOP_SWEEP_SPEED << SHIFT_BITS) ;
+int16_t     topAxialSpeedFP ;
+int16_t     topYawSpeedFP   ;
+int16_t     topSweepSpeedFP ;
+
 
 void    initJoystick(void) {
     setJoystickType(getUIType());
+    setJoystickSpeed(getUISpeedMode());
     TMR1_SetInterruptHandler(readJoystick);
     joystickEnabled = false;
     stopMotion();
 }
 
+void    setJoystickSpeed(int8_t jsSpeedMode) {
+    topAxialSpeedFP = (TOP_AXIAL_SPEED << SHIFT_BITS) * (3 + jsSpeedMode) / 3;
+    topYawSpeedFP   = (TOP_YAW_SPEED   << SHIFT_BITS) * (3 + jsSpeedMode) / 3;
+    topSweepSpeedFP = (TOP_SWEEP_SPEED << SHIFT_BITS) * (3 + jsSpeedMode) / 3;
+}
 void    enableJoystick(){
     joystickEnabled = true;
     resetBTTimer();
@@ -193,24 +197,26 @@ void    readButtonJoystick(void) {
         targetAxialFP =   0;
 
     if (JSRI_GetValue() == 0){
-        if (targetAxialFP == 0)
+        if (targetAxialFP == 0) {
             targetYawFP =  topYawSpeedFP;
+        }
         else {
-            targetYawFP =  topSweepSpeedFP;
-            accelYawFP   = accelLimitSweepFP;
+            targetYawFP = topSweepSpeedFP;
+            accelYawFP  = accelLimitSweepFP;
         }
     }
     else if (JSLE_GetValue() == 0){
-        if (targetAxialFP == 0)
+        if (targetAxialFP == 0) {
             targetYawFP =  -topYawSpeedFP;
+        }
         else {
-            targetYawFP =  -topSweepSpeedFP;
-            accelYawFP   = accelLimitSweepFP;
+            targetYawFP = -topSweepSpeedFP;
+            accelYawFP  =  accelLimitSweepFP;
         }
     }
     else {
-        targetYawFP =   0;
-        accelYawFP   = accelLimitYawStopFP;
+        targetYawFP = 0;
+        accelYawFP  = accelLimitYawStopFP;
     }
 
     // calculate motion profile and send to serial port.
@@ -219,14 +225,14 @@ void    readButtonJoystick(void) {
 }
 
 void    readPotJoystick(void) {
-    accelAxialFP  = accelLimitAxialFP * 2;
-    accelYawFP    = accelLimitYawFP * 2;
+    accelAxialFP = 2048;
+    accelYawFP   = 2048;
     
     int16_t  axial = - deadband(ADCC_GetSingleConversion(JSDO), axialCenter);
     int16_t  yaw   = - deadband(ADCC_GetSingleConversion(JSLE), yawCenter);
     
-    targetAxialFP = (int16_t)((TOP_AXIAL_POT_SPEED * (int32_t)axial) >> 9);
-    targetYawFP   = (int16_t)((TOP_YAW_POT_SPEED   * (int32_t)yaw)   >> 9);
+    targetAxialFP = (int16_t)((topAxialSpeedFP * (int32_t)axial) >> 11);
+    targetYawFP   = (int16_t)((topYawSpeedFP   * (int32_t)yaw)   >> 11);
 
     // calculate motion profile and send to serial port.
     calculateMotion();
