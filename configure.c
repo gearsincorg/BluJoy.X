@@ -120,16 +120,18 @@ void    pairBluetoothDevices(void){
 void    setBTBaudRatesTo38400() {
     // switch to 9600 baud and tell modules to run at 38400
     // This will be ignored if they are already there.
+    // Updated for HM-19
     SetDualReceive();
+
     setSerialBaud(9600);
-    
     sendBTString("AT");
     sleep(100);
-    sendBTString("AT+BAUD2");
+    sendBTString("AT+BAUD5");  // >> 38400  Was 2 on HM-11, now 5 on HM-19
     sleep(250);
     sendBTString("AT");
     sleep(500);
     sendBTString("AT+RESET");  // expect OK+RESET
+    
     sleep(500);
     setSerialBaud(38400);
 }
@@ -142,10 +144,13 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster) {
         SetMasterTXRX();
     else
         SetSlaveTXRX();
-        
+
     sendBTString("AT");
     sleep(300);  // was pulse
-    sleep(10);
+
+    sendBTString("AT+POWE7");   // +3db power
+    sleep(20);
+    
     if (isMaster) 
         sendBTString("AT+ROLE1");
     else
@@ -155,11 +160,11 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster) {
     pulseLEDColor((strstr((void *)RX_Buffer, "OK") != NULL) ? COLOR_GREEN : COLOR_YELLOW, 100, 200);
     
     // get the MAC address  Expect reply:   OK+ADDR:xxxxxxxxxxxx
-    sleep(10);  // need to keep short to stay disconnected, dut long enough to process prior command.
+    sleep(10);  // need to keep short to stay disconnected, but long enough to process prior command.
     sendBTString("AT+ADDR?");
     charsRead = receiveBTBuffer(RX_Buffer, 30, 400);
-    addrPointer = (void *)strstr((void *)RX_Buffer, "ADDR:");
-            
+    addrPointer = (void *)strstr((void *)RX_Buffer, "Get:");  // HM-11 uses "ADDR:"
+    
     if (addrPointer != 0) {
         memcpy(MAC, addrPointer + 5, 12);
         pulseLEDColor( COLOR_GREEN, 100, 200);
@@ -204,7 +209,7 @@ void    doFactoryReset() {
     sleep(100);
     sendBTString("AT+CLEAR");
     sleep(100);
-    sendBTString("AT+BAUD0");
+    sendBTString("AT+BAUD3");  // > 9600 Was 0 on HM-11, now 3 on HM-19
     sleep(500);
     sendBTString("AT+RESET");  // expect OK+RESET
     sleep(1000);

@@ -1,12 +1,28 @@
 <config configVersion="1.1" device="PIC16LF18446" coreVersion="4.85.0">
    <usedClasses class="java.util.HashMap">
       <entry>
+         <string>System Module</string>
+         <string>class com.microchip.mcc.mcu8.systemManager.SystemManager</string>
+      </entry>
+      <entry>
+         <string>INTERNAL OSCILLATOR</string>
+         <string>class com.microchip.mcc.mcu8.systemManager.osc.Osc</string>
+      </entry>
+      <entry>
          <string>PMD</string>
          <string>class com.microchip.mcc.mcu8.systemManager.pmd.PMD</string>
       </entry>
       <entry>
+         <string>WWDT</string>
+         <string>class com.microchip.mcc.mcu8.systemManager.wwdt.WWDT</string>
+      </entry>
+      <entry>
          <string>Pin Module</string>
          <string>class com.microchip.mcc.mcu8.pinManager.PinManager</string>
+      </entry>
+      <entry>
+         <string>EUSART1</string>
+         <string>class com.microchip.mcc.mcu8.modules.eusart.EUSART</string>
       </entry>
       <entry>
          <string>RESET</string>
@@ -17,28 +33,12 @@
          <string>class com.microchip.mcc.mcu8.interruptManager.InterruptManager</string>
       </entry>
       <entry>
-         <string>System Module</string>
-         <string>class com.microchip.mcc.mcu8.systemManager.SystemManager</string>
-      </entry>
-      <entry>
-         <string>INTERNAL OSCILLATOR</string>
-         <string>class com.microchip.mcc.mcu8.systemManager.osc.Osc</string>
-      </entry>
-      <entry>
-         <string>WWDT</string>
-         <string>class com.microchip.mcc.mcu8.systemManager.wwdt.WWDT</string>
-      </entry>
-      <entry>
-         <string>EUSART1</string>
-         <string>class com.microchip.mcc.mcu8.modules.eusart.EUSART</string>
+         <string>ADCC</string>
+         <string>class com.microchip.mcc.mcu8.modules.adcc.ADC</string>
       </entry>
       <entry>
          <string>TMR3</string>
          <string>class com.microchip.mcc.mcu8.modules.tmr1.TMR1</string>
-      </entry>
-      <entry>
-         <string>ADCC</string>
-         <string>class com.microchip.mcc.mcu8.modules.adcc.ADC</string>
       </entry>
       <entry>
          <string>TMR2</string>
@@ -7656,6 +7656,10 @@
    </tokenMap>
    <generatedFileHashHistoryMap class="java.util.HashMap">
       <entry>
+         <file>mcc_generated_files\interrupt_manager.h</file>
+         <hash>9b6ca019421501da5f1fc2a0e93a5018d8f5f9d632d2172ff9389053ae04906d</hash>
+      </entry>
+      <entry>
          <file>mcc_generated_files\mcc.h</file>
          <hash>1ad8af170a94c2c7012118dc3b729431f22a03c0dd76a7d2389a5e8f4e14c0b4</hash>
       </entry>
@@ -7664,44 +7668,40 @@
          <hash>c4895a11ee7e2884dae6af57d393f77ae0d7a8b43da4466af81e766a68aac0e4</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\interrupt_manager.h</file>
-         <hash>9b6ca019421501da5f1fc2a0e93a5018d8f5f9d632d2172ff9389053ae04906d</hash>
+         <file>mcc_generated_files\eusart1.h</file>
+         <hash>b9bdccf1cd83f0df9e4f3f718a5d51e82b87338c28b6d9f5ae62d29bbfdb9a82</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr1.h</file>
          <hash>fd0f4e8ba018632bec54100edf44b03cb4d6ad93c485590a1a1bc0eced3c86e4</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\eusart1.h</file>
-         <hash>b9bdccf1cd83f0df9e4f3f718a5d51e82b87338c28b6d9f5ae62d29bbfdb9a82</hash>
+         <file>main.c</file>
+         <hash>e83fe901cd15186a6b19ce1c1806cab44e544201fb757d612db682d606509b60</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr3.h</file>
          <hash>8433e5a334a0a7bef7add3cb788fdca90c55e0eb37fafb9162eec30cf21010fa</hash>
       </entry>
       <entry>
-         <file>main.c</file>
-         <hash>e83fe901cd15186a6b19ce1c1806cab44e544201fb757d612db682d606509b60</hash>
+         <file>mcc_generated_files\tmr2.h</file>
+         <hash>baaf7ca701b005a8170b37b808e895f068d45fbb2970a82d381c6b90a9a617b5</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\device_config.c</file>
          <hash>a9b48de11b815efb0b6ebb52a1e9afac3c54ebd2d66365bc59b496a6b4ce9a03</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\tmr2.h</file>
-         <hash>baaf7ca701b005a8170b37b808e895f068d45fbb2970a82d381c6b90a9a617b5</hash>
-      </entry>
-      <entry>
-         <file>mcc_generated_files\pin_manager.h</file>
-         <hash>4be4c95e038ee7976c9fe16e2b88a8ffa2ba2af079da435994b1e246ef611cc4</hash>
+         <file>mcc_generated_files\adcc.h</file>
+         <hash>6a5028a9139231c1c54531a066f3b761ad9a91059d57973fab99159e14c3f4ce</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr2.c</file>
          <hash>d18aa3a9a4bb93682b8d85ff74e52933557bf4394671a7d28fd9d54e159f0861</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\adcc.h</file>
-         <hash>6a5028a9139231c1c54531a066f3b761ad9a91059d57973fab99159e14c3f4ce</hash>
+         <file>mcc_generated_files\pin_manager.h</file>
+         <hash>4be4c95e038ee7976c9fe16e2b88a8ffa2ba2af079da435994b1e246ef611cc4</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\tmr1.c</file>
@@ -7720,12 +7720,12 @@
          <hash>ee09de465e2fccb14d47105a9cebe8ded594e8020643cc3f24dc52e88d0e2e1a</hash>
       </entry>
       <entry>
-         <file>mcc_generated_files\mcc.c</file>
-         <hash>4504226b57d63e8b30120f513403d90122fe5473b89c820aa5e36e422cf48526</hash>
-      </entry>
-      <entry>
          <file>mcc_generated_files\interrupt_manager.c</file>
          <hash>54949c6a9165d20d6c5dec4e2ab57ca8a6705880be54e455e2440fbb279e4ff1</hash>
+      </entry>
+      <entry>
+         <file>mcc_generated_files\mcc.c</file>
+         <hash>4504226b57d63e8b30120f513403d90122fe5473b89c820aa5e36e422cf48526</hash>
       </entry>
       <entry>
          <file>mcc_generated_files\eusart1.c</file>
