@@ -24,6 +24,7 @@ bool    getBTAddress(uint8_t * MAC, bool isMaster);
 void    setBTConnection(uint8_t * MAC, bool isMaster);
 
 void    doFactoryReset(void);
+void    doBTReset(void);
 void    turnPowerOn(void);
 void    turnPowerOff(void);
 

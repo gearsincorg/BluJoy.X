@@ -21,11 +21,12 @@
 #define     SHIFT_BITS      2
 #define     DEAD_BAND       512
 
-#define     AXIAL_ACC_LIMIT 600      //  mm/s/s
-#define     YAW_STOP_LIMIT 2048      //  deg/s/s 
-#define     YAW_ACC_LIMIT   400      //  deg/s/s 
-#define     SWEEP_ACC_LIMIT 100      //  deg/s/s   
-#define     CYCLE_PER_SEC    20       
+#define     AXIAL_ACC_LIMIT   600      //  mm/s/s
+#define     AXIAL_STOP_LIMIT 2048      //  mm/s/s
+#define     YAW_STOP_LIMIT   2048      //  deg/s/s 
+#define     YAW_ACC_LIMIT     400      //  deg/s/s 
+#define     SWEEP_ACC_LIMIT   100      //  deg/s/s   
+#define     CYCLE_PER_SEC      20       
 
 #define     TOP_AXIAL_SPEED 300      //  mm/s  
 #define     TOP_YAW_SPEED    30      //  deg/s  
@@ -50,10 +51,11 @@ int16_t     limitedYawFP    = 0;
 int16_t     accelAxialFP    = 0;
 int16_t     accelYawFP      = 0;
 
-int16_t     accelLimitAxialFP   = (AXIAL_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
-int16_t     accelLimitYawFP     = (YAW_ACC_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
-int16_t     accelLimitYawStopFP = (YAW_STOP_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
-int16_t     accelLimitSweepFP   = (SWEEP_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitAxialFP     = (AXIAL_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitAxialStopFP = (AXIAL_STOP_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitYawFP       = (YAW_ACC_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitYawStopFP   = (YAW_STOP_LIMIT   << SHIFT_BITS) / CYCLE_PER_SEC ;
+int16_t     accelLimitSweepFP     = (SWEEP_ACC_LIMIT << SHIFT_BITS) / CYCLE_PER_SEC ;
 
 int16_t     topAxialSpeedFP ;
 int16_t     topYawSpeedFP   ;
@@ -183,22 +185,24 @@ void    readJoystick(void) {
 
 void    readButtonJoystick(void) {
     
-    // accelAxialFP = accelLimitAxialFP;
-    // accelYawFP   = accelLimitYawFP;
-    accelAxialFP = 2048;
-    accelYawFP   = 2048;
+    accelAxialFP = accelLimitAxialFP;
+    accelYawFP   = accelLimitYawFP;
     
     // run regular joystick processing
-    if (JSUP_GetValue() == 0)
+    if (JSUP_GetValue() == 0) {
         targetAxialFP =  topAxialSpeedFP;
-    else if (JSDO_GetValue() == 0)
+    }
+    else if (JSDO_GetValue() == 0) {
         targetAxialFP = -topAxialSpeedFP;
-    else
+    }
+    else {
         targetAxialFP =   0;
+        accelAxialFP = accelLimitAxialStopFP;
+    }
 
     if (JSRI_GetValue() == 0){
         if (targetAxialFP == 0) {
-            targetYawFP =  topYawSpeedFP;
+            targetYawFP  = topYawSpeedFP;
         }
         else {
             targetYawFP = topSweepSpeedFP;

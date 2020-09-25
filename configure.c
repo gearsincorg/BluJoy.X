@@ -47,8 +47,7 @@ void    SetMasterTXRX(void){
 }
 
 void    SetSlaveTXMasterRX(void){
-    RX1DTPPS = 0x13;   //RC3->EUSART1:RX1;    
-    
+    RX1DTPPS = 0x13;   //        RC3->EUSART1:RX1;    
     RC4PPS = 0x0F;     //EUSART1:TX1->RC4 ;    
     RC6PPS = 0x16;     //        RC6->RC6;    
     sleep(5);
@@ -221,4 +220,10 @@ void    doFactoryReset() {
     sleep(1000);
     
     SetSlaveTXRX();
+}
+
+void    doBTReset() {
+    pulseLEDColor( COLOR_YELLOW, 1000, 100);
+    sendBTString("AT+CONNL");  
+    sleep(100);
 }
