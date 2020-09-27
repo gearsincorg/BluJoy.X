@@ -100,8 +100,6 @@ uint8_t receiveBTBuffer(uint8_t * buffer, uint8_t maxChars, uint16_t timeoutMS) 
     uint32_t startTime = getTicks();
     uint8_t charsRead = 0;
     
-   // mark buffer as empty.
-    
     // return when chars read, or timeout.
     while ((charsRead < maxChars) && (getTicksSince(startTime) <= timeoutMS)) {
         if (EUSART1_is_rx_ready()) {
