@@ -40,6 +40,10 @@ uint32_t    estopTimer      = 0;
 
 int16_t     axialCenter     = 2048;
 int16_t     yawCenter       = 2048;
+int32_t     axialCenterSum  = 0;
+int32_t     yawCenterSum    = 0;
+#define     CALIBRATE_COUNT 128
+#define     CALIBRATE_SHIFT   7
 
 uint8_t     replyBuffer[4 * MAX_REPLY];
 int16_t     targetAxialFP   = 0;
@@ -107,14 +111,14 @@ void    setJoystickType(uint8_t jsType) {
             sleep(20);
 
             // determine joystick centers
-            axialCenter     = 0;
-            yawCenter       = 0;
-            for (int i = 0;  i < 10; i++) {
-                axialCenter += ADCC_GetSingleConversion(JSDO);
-                yawCenter   += ADCC_GetSingleConversion(JSLE);
+            axialCenterSum     = 0;
+            yawCenterSum       = 0;
+            for (int i = 0;  i < CALIBRATE_COUNT; i++) {
+                axialCenterSum += ADCC_GetSingleConversion(JSDO);
+                yawCenterSum   += ADCC_GetSingleConversion(JSLE);
             }
-            axialCenter /= 10;
-            yawCenter   /= 10;
+            axialCenter = axialCenterSum >> CALIBRATE_SHIFT;
+            yawCenter   = yawCenterSum >> CALIBRATE_SHIFT;
             break;
     }
 }    

@@ -55,14 +55,16 @@ void    SetSlaveTXMasterRX(void){
 }
 
 void    turnPowerOn(){
+    POT_ENA_SetHigh();
     POWER_EN_SetLow();
-    TRISC = 0xAF;  // Pins 4 and 6 are outputs
+    TRISC = 0x2F;  // Pins 4 and 6,7 are outputs
     SetSlaveTXRX();
     powerOn = true;
 }
 
 void    turnPowerOff(){
     POWER_EN_SetHigh();
+    POT_ENA_SetLow();
     SetPowerdownTXRX();
     powerOn = false;
 }

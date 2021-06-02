@@ -63,3 +63,7 @@ int32_t     BTTimeRemaining(void){
         return (BTTimeout - elapsed);
     }
 }
+
+int32_t     BTTimeWaiting(void){
+    return (systemTime - lastBTTime);
+}

@@ -37,10 +37,10 @@ uint32_t uiStateTime;
 #define UI_USER12_HOLD      5
 #define UI_USER12_LONG_HOLD 6
 
-#define UI_SPEED_MODES 10
-#define UI_BRAKE_MODES 2
-#define UI_DEBOUNCE     100
-#define UI_LONG_HOLD   4000
+#define UI_SPEED_MODES     10
+#define UI_BRAKE_MODES      2
+#define UI_DEBOUNCE       100
+#define UI_LONG_HOLD     4000
 
 void    initUI(void) {
     R_LED = 0 ;
@@ -64,8 +64,7 @@ void    initUI(void) {
 }
 
 void    runUI(void) {
-    int32_t timeRemaining;
-    
+   
     switch (uiState) {
         case UI_IDLE:
             if (USER1_pressed()) {
@@ -153,13 +152,13 @@ void    runUI(void) {
     
     // Show operational state with 1 sec blink.
     if (oneSec()) {
-        timeRemaining = BTTimeRemaining();
-        if (timeRemaining < 5000)
-            pulseLEDColor(0x100, 2, 1);
-        else if (timeRemaining < 15000)
+        if (BTTimeRemaining() < 5000) {
+            pulseLEDColor(0x200, 2, 1);
+        } else if (BTTimeWaiting() > 250) {
             pulseLEDColor(0x110, 2, 1);
-        else
+        } else {
             pulseLEDColor(0x010, 2, 1);
+        }
     }
 }
 
